@@ -9,7 +9,7 @@ from reportlab.lib.utils import ImageReader
 import os
 
 # --- CONFIGURAÇÕES ---
-ARQUIVO_CSV = 'equipes.csv'
+ARQUIVO_CSV = 'equipes_participantes.csv'
 IMAGEM_FUNDO = os.path.abspath('certificado.png')
 
 COLUNA_TIME = 'nome'
@@ -64,10 +64,10 @@ def gerar_pdf(dados_time, pasta_destino):
     
     # Ajusta as margens e a posição do texto
     largura_util = largura - (12 * cm) # Margem esquerda + direita
-    posicao_x = 6 * cm # Margem esquerda
+    posicao_x = 8.5 * cm # Margem esquerda
     
     w, h = paragrafo.wrap(largura_util, altura)
-    posicao_y = altura * 0.45 # Posição vertical
+    posicao_y = altura * 0.4 # Posição vertical
     paragrafo.drawOn(c, posicao_x, posicao_y)
 
     c.save()
@@ -77,26 +77,23 @@ def main():
     """Lê o arquivo CSV e gera os certificados para as equipes válidas."""
     try:
         df_equipes = pd.read_csv(ARQUIVO_CSV)
-        if 'Unnamed: 0' in df_equipes.columns:
-            df_equipes = df_equipes.drop('Unnamed: 0', axis=1)
 
-        pasta_destino = "certificados_validos"
+        pasta_destino = "certificados_final"
         if not os.path.exists(pasta_destino):
             os.makedirs(pasta_destino)
 
         print("Iniciando a geração de certificados...")
         for indice, linha in df_equipes.iterrows():
             # Pula a linha se o nome do time estiver vazio
-            if pd.isna(linha[COLUNA_TIME]):
-                continue
             
             # ✅ NOVA VERIFICAÇÃO: Pula a linha se a instituição estiver vazia
-            if pd.isna(linha[COLUNA_INSTITUICAO]) or str(linha[COLUNA_INSTITUICAO]).strip() == '':
-                print(f"[AVISO] Time '{linha[COLUNA_TIME]}' ignorado por não ter uma instituição definida.")
-                continue
+            
 
             # Se passou em todas as verificações, gera o PDF
-            gerar_pdf(linha, pasta_destino)
+            try:
+                gerar_pdf(linha, pasta_destino)
+            except Exception as e:
+                print(f"ERRO inesperado: {e}")
 
         print("\n✅ Processo concluído! Certificados salvos na pasta 'certificados'.")
 
@@ -104,8 +101,6 @@ def main():
         print(f"ERRO: O arquivo '{ARQUIVO_CSV}' não foi encontrado.")
     except KeyError as e:
         print(f"ERRO: A coluna {e} não foi encontrada no arquivo CSV. Verifique os nomes das colunas.")
-    except Exception as e:
-        print(f"ERRO inesperado: {e}")
 
 if __name__ == "__main__":
     main()
