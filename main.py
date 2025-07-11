@@ -26,9 +26,15 @@ def gerar_pdf(dados_time, pasta_destino):
     alunos = f"{dados_time[COLUNA_ALUNO_1]}, {dados_time[COLUNA_ALUNO_2]} e {dados_time[COLUNA_ALUNO_3]}"
     coach = dados_time[COLUNA_COACH]
 
-    # Cria um nome de arquivo seguro para evitar erros
-    nome_arquivo_seguro = "".join([c for c in str(nome_time) if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
-    nome_arquivo_pdf = os.path.join(pasta_destino, f"Certificado - {nome_arquivo_seguro}.pdf")
+    # Cria nomes seguros para o time e instituição (removendo caracteres especiais)
+    nome_time_seguro = "".join([c for c in str(nome_time) if c.isalnum() or c in (' ', '_')]).strip()
+    instituicao_segura = "".join([c for c in str(instituicao) if c.isalnum() or c in (' ', '_')]).strip()
+
+    # Nome do arquivo inclui o time e a instituição
+    nome_arquivo_pdf = os.path.join(
+        pasta_destino,
+        f"Certificado - {nome_time_seguro} - {instituicao_segura}.pdf"
+    )
 
     c = canvas.Canvas(nome_arquivo_pdf, pagesize=landscape(letter))
     largura, altura = landscape(letter)
